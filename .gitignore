@@ -1,0 +1,8 @@
+# Ukryj plik z kluczami API
+.env
+# Ukryj foldery środowiska wirtualnego Python
+venv/
+.venv/
+app+comments.py
+my-notes
+my-app.py

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/css/style.css">
+    <title>🎤 Tłumacz Głosowy</title>
+</head>
+<body>
+    <h1>🎤 Tłumacz Głosowy Real-Time</h1>
+    <p>Witaj w aplikacji!</p>
+    <buttonContainer>
+        <button type="button" id="recordBtn">Record</button>
+        <button type="button" id="clearBtn">Clear</button>
+    </buttonContainer>
+
+    <input type="hidden" name="dataSrcLanguage" id="dataSrcLanguage" value='{{ history_json|safe }}'>
+    <div class="container">
+        <div id="recognition-result" class="sound-detection"></div>
+        <div id="translation-result" class="sound-translation"></div>
+    </div>
+    <script>
+        let leftBox = document.getElementById('recognition-result');
+        let rightBox = document.getElementById('translation-result');
+        let mediaRecorder;
+        let audioChunks = [];
+        let audioBlob;
+        let recordBtn = document.getElementById('recordBtn');
+        let clearBtn = document.getElementById('clearBtn');
+        let historyValue = document.getElementById('dataSrcLanguage').value;
+
+
+        let audioHistory = [];
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = (e) => {
+                    audioChunks.push(e.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+
+                    audioChunks = [];
+                    const formData = new FormData();
+
+
+                    formData.append('dataSrcLanguage', historyValue);
+                    formData.append('audio', audioBlob, 'audio.webm');
+                    try {
+                        const response = await fetch('/recognize', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const data = await response.json();
+
+
+                        if (data.success) {
+                            leftBox.innerHTML += `<div class="msg-block">${data.original_text}</div>`;
+                            rightBox.innerHTML += `<div class="msg-block">${data.translation}</div>`;
+                            const audioFormData = new FormData();
+                            audioFormData.append('text', data.translation);
+                            const audioResponse = await fetch('/synthesize', {
+                                method: 'POST',
+                                body: audioFormData
+                            });
+                            if (audioResponse.ok) {
+
+                                const audioBlob = await audioResponse.blob();
+                                const audioUrl = URL.createObjectURL(audioBlob);
+<!--                                leftBox.innerHTML += `<div class="msg-block">${data.original_text}</div>`;-->
+<!--                                rightBox.innerHTML += `<div class="msg-block">${data.translation}</div>`;-->
+                                document.getElementById('dataSrcLanguage').value = data.history_json;
+                                const historyArray = JSON.parse(data.history_json);
+                                window.scrollTo(0, document.body.scrollHeight);
+                            }
+                        }
+                    } catch (error) {
+                        console.error("Błąd wysyłki:", error);
+                    }
+
+                };
+            })
+
+
+        recordBtn.addEventListener('click', async () => {
+            if (mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                recordBtn.textContent = 'Record';
+            } else {
+
+                mediaRecorder.start();
+                recordBtn.textContent = 'Stop';
+            }
+
+
+
+     });
+
+      clearBtn.addEventListener('click', async () => {
+        leftBox.innerHTML = ""
+        rightBox.innerHTML = ""
+        historyValue = [];
+
+    });
+
+    </script>
+
+</body>
+</html>
