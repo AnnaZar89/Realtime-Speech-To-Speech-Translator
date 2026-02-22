@@ -7,14 +7,23 @@
     <title>🎤 Tłumacz Głosowy</title>
 </head>
 <body>
-    <h1>🎤 Tłumacz Głosowy Real-Time</h1>
-    <p>Witaj w aplikacji!</p>
+    <h1>🎤 Real-Time Voice Translator</h1>
+    <p>Welcome to the app!</p>
     <div class="selectContainer">
-        <label for="dataSrcLanguage">Język źródłowy:</label>
-        <select id="dataSrcLanguage" name="dataSrcLanguage">
-            <option value="pl-PL">Polski</option>
-            <option value="en-US">Angielski</option>
-        </select>
+        <div class="field">
+            <label for="dataSrcLanguage">Source Language:</label>
+            <select id="dataSrcLanguage" name="dataSrcLanguage">
+                <option value="pl-PL">Polish</option>
+                <option value="en-US">English</option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="dataSrcLanguage">Target Language:</label>
+            <select id="dataTargetLanguage" name="dataTargetLanguage">
+                <option value="pl-PL">Polish</option>
+                <option value="en-US">English</option>
+            </select>
+        </div>
     </div>
     <div class="buttonContainer">
         <button type="button" id="recordBtn">Record</button>
