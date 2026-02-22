@@ -13,15 +13,27 @@
         <div class="field">
             <label for="dataSrcLanguage">Source Language:</label>
             <select id="dataSrcLanguage" name="dataSrcLanguage">
-                <option value="pl-PL">Polish</option>
+                <option value="pl-PL" selected>Polish</option>
                 <option value="en-US">English</option>
+                <option value="fr-FR">French</option>
+                <option value="de-DE">German</option>
+                <option value="it-IT">Italian</option>
+                <option value="es-ES">Spanish</option>
+                <option value="ja-JP">Japanese</option>
+                <option value="zh-CN">Chinese</option>
             </select>
         </div>
         <div class="field">
             <label for="dataSrcLanguage">Target Language:</label>
             <select id="dataTargetLanguage" name="dataTargetLanguage">
                 <option value="pl-PL">Polish</option>
-                <option value="en-US">English</option>
+                <option value="en-US" selected>English</option>
+                <option value="fr-FR">French</option>
+                <option value="de-DE">German</option>
+                <option value="it-IT">Italian</option>
+                <option value="es-ES">Spanish</option>
+                <option value="ja-JP">Japanese</option>
+                <option value="zh-CN">Chinese</option>
             </select>
         </div>
     </div>
@@ -43,7 +55,14 @@
         let audioBlob;
         let recordBtn = document.getElementById('recordBtn');
         let clearBtn = document.getElementById('clearBtn');
-        let historyValue = document.getElementById('history').value;
+
+
+
+
+
+
+
+
 
 
         let audioHistory = [];
@@ -56,13 +75,16 @@
 
                 mediaRecorder.onstop = async () => {
                     audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-
                     audioChunks = [];
-                    const formData = new FormData();
-
-
+                    let formData = new FormData();
+                    let historyValue = document.getElementById('history').value;
+                    let srcLang = document.getElementById('dataSrcLanguage').value;
+                    let targetLang = document.getElementById('dataTargetLanguage').value;
+                    formData.append('source_lang', srcLang);
+                    formData.append('target_lang', targetLang);
                     formData.append('history', historyValue);
                     formData.append('audio', audioBlob, 'audio.webm');
+
                     try {
                         const response = await fetch('/recognize', {
                             method: 'POST',
@@ -104,8 +126,14 @@
                 recordBtn.textContent = 'Record';
             } else {
 
+
+
+
+
+
                 mediaRecorder.start();
                 recordBtn.textContent = 'Stop';
+
             }
 
 
@@ -116,6 +144,8 @@
         leftBox.innerHTML = ""
         rightBox.innerHTML = ""
         historyValue = [];
+        document.getElementById('dataSrcLanguage').value = 'pl-PL';
+        document.getElementById('dataTargetLanguage').value = 'en-US';
 
     });
 

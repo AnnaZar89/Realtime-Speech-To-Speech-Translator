@@ -22,13 +22,13 @@ ELEVENLABS_VOICE_ID = os.getenv('ELEVENLABS_VOICE_ID')
 elevenlabs_client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
 
 
-def translate(text):
+def translate(text, source, target):
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
             {
                 "role": "system",
-                "content": f"Translate to french. Return ONLY the translation."
+                "content": f"Translate from {source} to {target}. Return ONLY the translation."
             },
             {"role": "user", "content": text}
         ],
@@ -85,7 +85,10 @@ def recognize():
     # 1. Pobierz audio i historię
     audio_file = request.files['audio']
     audio_data = audio_file.read()
-    conversation_history = request.form.get('dataSrcLanguage', '[]')  # Domyślnie pusta lista w stringu; jak są dane to w json
+    conversation_history = request.form.get('history', '[]')  # Domyślnie pusta lista w stringu; jak są dane to w json
+    source_lang = request.form.get('source_lang')  # np. "pl-PL"
+    target_lang = request.form.get('target_lang')  # np. "en-US"
+
     # 2. Konwersja webm -> WAV 16kHz mono (Twoje dotychczasowe przetwarzanie pydub)
     audio = AudioSegment.from_file(io.BytesIO(audio_data))
     audio = audio.set_frame_rate(16000).set_channels(1).set_sample_width(2)
@@ -94,7 +97,7 @@ def recognize():
     audio.export(wav_buffer, format='wav')
 
     speech_config = speechsdk.SpeechConfig(AZURE_SPEECH_KEY, AZURE_REGION)
-    speech_config.speech_recognition_language = "pl-PL"
+    speech_config.speech_recognition_language = source_lang
 
     # PushStream dla danych binarnych
     stream = speechsdk.audio.PushAudioInputStream()
@@ -108,7 +111,7 @@ def recognize():
 
     if result.reason == speechsdk.ResultReason.RecognizedSpeech:
         original_text = result.text
-        translation = translate(original_text)
+        translation = translate(original_text, source_lang, target_lang)
 
         try:
             history_list = json.loads(conversation_history) # zamieniamy z jsona na nie json
