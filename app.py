@@ -142,6 +142,26 @@ def synthesize():
     else:
         return jsonify({"success": False, "error": "No text provided"}), 400
 
+@app.route('/translate_tts', methods=['POST'])
+def translate_tts():
+    try:
+        text = request.form.get('text')
+        src_lang = request.form.get('source_lang')
+        target_lang = request.form.get('target_lang')
+
+        # TUTAJ TWOJA LOGIKA TŁUMACZENIA
+        # Przykład: translation = my_translator.translate(text, ...)
+        translation = f"Przetłumaczono: {text}" # To tylko przykład
+        translation = translate(text, src_lang, target_lang)
+        # BARDZO WAŻNE: Musisz zwrócić jsonify, a nie zwykły string!
+        return jsonify({
+            "success": True,
+            "translation": translation
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
