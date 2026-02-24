@@ -142,8 +142,8 @@ def synthesize():
     else:
         return jsonify({"success": False, "error": "No text provided"}), 400
 
-@app.route('/translate_tts', methods=['POST'])
-def translate_tts():
+@app.route('/translate_text', methods=['POST'])
+def translate_text():
     try:
         text = request.form.get('text')
         src_lang = request.form.get('source_lang')

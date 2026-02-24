@@ -7,121 +7,121 @@
     <title>Translator App</title>
 </head>
 <body>
-    <div id="translatorMainPage">
+    <div id="translator-main-page">
         <h1>Translator App</h1>
         <p>Welcome to the app! Please select translator type:</p>
         <div>
-            <a href="#voice" class="SpeechTranslatorButton">Speech Translator</a>
-            <a href="#text" class="TextTranslatorButton">Text Translator</a>
+            <a href="#voice" class="btn-speech">Speech Translator</a>
+            <a href="#text" class="text-translator-button">Text Translator</a>
         </div>
     </div>
-
-    <div id="voiceTranslatorContainer" style="display:none">
+    <div class="translator-container" id="voice-translator" style="display:none">
         <a href="#home">⬅ Back to Menu</a>
-        <div class="selectContainer">
+        <div class="select-container">
             <h1>🎤 Real-Time Voice Translator</h1>
             <div class="field">
-                <label for="dataSrcLanguage">Source Language:</label>
-                <select id="dataSrcLanguage" name="dataSrcLanguage">
-                    <option value="pl-PL" selected>Polish</option>
-                    <option value="en-US">English</option>
-                    <option value="fr-FR">French</option>
-                    <option value="de-DE">German</option>
-                    <option value="it-IT">Italian</option>
-                    <option value="es-ES">Spanish</option>
-                    <option value="ja-JP">Japanese</option>
-                    <option value="zh-CN">Chinese</option>
-                </select>
+                <label>Source Language:
+                    <select id="src-language" class="lang-select" name="source-lang">
+                        <option value="pl-PL" selected>Polish</option>
+                        <option value="en-US">English</option>
+                        <option value="fr-FR">French</option>
+                        <option value="de-DE">German</option>
+                        <option value="it-IT">Italian</option>
+                        <option value="es-ES">Spanish</option>
+                        <option value="ja-JP">Japanese</option>
+                        <option value="zh-CN">Chinese</option>
+                    </select>
+                </label>
             </div>
             <div class="field">
-                <label for="dataSrcLanguage">Target Language:</label>
-                <select id="dataTargetLanguage" name="dataTargetLanguage">
-                    <option value="pl-PL">Polish</option>
-                    <option value="en-US" selected>English</option>
-                    <option value="fr-FR">French</option>
-                    <option value="de-DE">German</option>
-                    <option value="it-IT">Italian</option>
-                    <option value="es-ES">Spanish</option>
-                    <option value="ja-JP">Japanese</option>
-                    <option value="zh-CN">Chinese</option>
-                </select>
+                <label>Target Language:
+                    <select id="target-language" class="lang-select" name="target-lang">
+                        <option value="pl-PL">Polish</option>
+                        <option value="en-US" selected>English</option>
+                        <option value="fr-FR">French</option>
+                        <option value="de-DE">German</option>
+                        <option value="it-IT">Italian</option>
+                        <option value="es-ES">Spanish</option>
+                        <option value="ja-JP">Japanese</option>
+                        <option value="zh-CN">Chinese</option>
+                    </select>
+                </label>
             </div>
         </div>
-        <div class="buttonContainer">
-            <button type="button" id="recordBtn">Record</button>
-            <button type="button" id="clearBtn">Clear</button>
+        <div class="button-container">
+            <button type="button" id="record-btn">Record</button>
+            <button type="button" class="clear-btn">Clear</button>
         </div>
-
         <input type="hidden" name="history" id="history" value='{{ history_json|safe }}'>
         <div class="container">
-            <div id="recognition-result" class="sound-detection"></div>
-            <div id="translation-result" class="sound-translation"></div>
+            <div id="voice-output" class="sound-detection"></div>
+            <div id="translation-result" class="target-translation"></div>
         </div>
     </div>
-    <div id="textTranslatorContainer" style="display:none">
+    <div class="translator-container" id="text-translator" style="display:none">
         <a href="#home">⬅ Back to Menu</a>
-        <div class="selectContainer">
+        <div class="select-container">
             <h1>Real-Time Text Translator</h1>
             <div class="field">
-                <label for="dataSrcLanguage">Source Language:</label>
-                <select name="dataSrcLanguage">
-                    <option value="pl-PL" selected>Polish</option>
-                    <option value="en-US">English</option>
-                    <option value="fr-FR">French</option>
-                    <option value="de-DE">German</option>
-                    <option value="it-IT">Italian</option>
-                    <option value="es-ES">Spanish</option>
-                    <option value="ja-JP">Japanese</option>
-                    <option value="zh-CN">Chinese</option>
-                </select>
+                <label>Source Language:
+                    <select class="lang-select" name="source-lang">
+                        <option value="pl-PL" selected>Polish</option>
+                        <option value="en-US">English</option>
+                        <option value="fr-FR">French</option>
+                        <option value="de-DE">German</option>
+                        <option value="it-IT">Italian</option>
+                        <option value="es-ES">Spanish</option>
+                        <option value="ja-JP">Japanese</option>
+                        <option value="zh-CN">Chinese</option>
+                    </select>
+                </label>
             </div>
             <div class="field">
-                <label for="dataSrcLanguage">Target Language:</label>
-                <select name="dataTargetLanguage">
-                    <option value="pl-PL">Polish</option>
-                    <option value="en-US" selected>English</option>
-                    <option value="fr-FR">French</option>
-                    <option value="de-DE">German</option>
-                    <option value="it-IT">Italian</option>
-                    <option value="es-ES">Spanish</option>
-                    <option value="ja-JP">Japanese</option>
-                    <option value="zh-CN">Chinese</option>
-                </select>
+                <label>Target Language:
+                    <select class="lang-select" name="target-lang">
+                        <option value="pl-PL">Polish</option>
+                        <option value="en-US" selected>English</option>
+                        <option value="fr-FR">French</option>
+                        <option value="de-DE">German</option>
+                        <option value="it-IT">Italian</option>
+                        <option value="es-ES">Spanish</option>
+                        <option value="ja-JP">Japanese</option>
+                        <option value="zh-CN">Chinese</option>
+                    </select>
+                </label>
+                <button type="button" class="clear-btn">Clear</button>
             </div>
                 <div class="container">
-                    <form id="ttsForm">
+                    <form id="text-to-text-form">
                         <label>Podaj tekst do zamiany przetłumaczenia:</label><br>
-                        <textarea id="textToTranslate" name="text" rows="5" cols="50" required></textarea><br><br>
+                        <textarea id="text-to-translate" name="text" rows="5" cols="50" required></textarea><br><br>
                     </form>
-                    <div class="sound-translation" id="tts-target-translation"></div>
+                    <div class="target-translation" id="text-target-translation"></div>
                 </div>
         </div>
     </div>
-
     <script>
-        let leftBox = document.getElementById('recognition-result');
+        let leftBox = document.getElementById('voice-output');
         let rightBox = document.getElementById('translation-result');
         let mediaRecorder;
         let audioChunks = [];
         let audioBlob;
-        let recordBtn = document.getElementById('recordBtn');
-        let clearBtn = document.getElementById('clearBtn');
-        let translatorMainPage = document.getElementById('translatorMainPage');
-        let voiceTranslatorContainer = document.getElementById('voiceTranslatorContainer');
-        let textTranslatorContainer = document.getElementById('textTranslatorContainer');
-        let srcLang = document.getElementById('dataSrcLanguage').value;
-        let targetLang = document.getElementById('dataTargetLanguage').value;
-        let textOutput = document.getElementById('tts-target-translation')
+        let recordBtn = document.getElementById('record-btn');
+        let clearBtn = document.querySelector('.clear-btn');
+        let translatorMainPage = document.getElementById('translator-main-page');
+        let voiceTranslator = document.getElementById('voice-translator');
+        let textTranslator = document.getElementById('text-translator');
+        let textOutput = document.getElementById('text-target-translation')
 
         function render () {
             hash = window.location.hash
-            voiceTranslatorContainer.style.display="none";
-            textTranslatorContainer.style.display="none";
+            voiceTranslator.style.display="none";
+            textTranslator.style.display="none";
             translatorMainPage.style.display="none";
             if (hash === '#voice') {
-                voiceTranslatorContainer.style.display = "block";
+                voiceTranslator.style.display = "block";
             } else if (hash === '#text') {
-                textTranslatorContainer.style.display = "block";
+                textTranslator.style.display = "block";
             } else {
 
                 translatorMainPage.style.display = "block";
@@ -139,9 +139,6 @@
         window.addEventListener('hashchange', render);
         window.addEventListener('load', render);
 
-
-
-
         let audioHistory = [];
         navigator.mediaDevices.getUserMedia({ audio: true })
             .then(stream => {
@@ -155,10 +152,11 @@
                     audioChunks = [];
                     let formData = new FormData();
                     let historyValue = document.getElementById('history').value;
-<!--                    let srcLang = document.getElementById('dataSrcLanguage').value;-->
-<!--                    let targetLang = document.getElementById('dataTargetLanguage').value;-->
-                    formData.append('source_lang', srcLang);
-                    formData.append('target_lang', targetLang);
+                    const container = recordBtn.closest('.translator-container');
+                    const src = container.querySelector('[name="source-lang"]').value;
+                    const target = container.querySelector('[name="target-lang"]').value;
+                    formData.append('source_lang', src);
+                    formData.append('target_lang', target);
                     formData.append('history', historyValue);
                     formData.append('audio', audioBlob, 'audio.webm');
 
@@ -208,40 +206,40 @@
             }
         });
 
-        clearBtn.addEventListener('click', async () => {
-            leftBox.innerHTML = ""
-            rightBox.innerHTML = ""
-            historyValue = [];
-            document.getElementById('dataSrcLanguage').value = 'pl-PL';
-            document.getElementById('dataTargetLanguage').value = 'en-US';
-
+        clearBtn.addEventListener('click', () => {
+            document.getElementById('text-to-translate').value = "";
+            document.querySelectorAll('.sound-detection, .target-translation').forEach(div => {
+                div.innerHTML = "";
+            });
+            document.querySelectorAll('.lang-select').forEach(select => {
+                if (select.name === 'source-lang') select.value = 'pl-PL';
+                if (select.name === 'target-lang') select.value = 'en-US';
+            });
+            document.getElementById('history').value = '[]';
         });
 
-        const textArea = document.getElementById('textToTranslate');
-
-
+        const textArea = document.getElementById('text-to-translate');
         let debounceTimer = null;
         let abortController = null;
-
-
         textArea.addEventListener('input', () => {
 
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(async () => {
-
                 const text = textArea.value.trim();
                 if (!text) return void (textOutput.innerHTML = "");
                 abortController?.abort();
                 abortController = new AbortController();
-
+                const container = textArea.closest('.translator-container');
+                const src = container.querySelector('[name="source-lang"]').value;
+                const target = container.querySelector('[name="target-lang"]').value;
                 const formData = new FormData();
                 formData.append('text', text);
-                formData.append('source_lang', srcLang);
-                formData.append('target_lang', targetLang);
+                formData.append('source_lang', src);
+                formData.append('target_lang', target);
 
 
                 try {
-                    const translation = await fetch('/translate_tts', {
+                    const translation = await fetch('/translate_text', {
                         method: 'POST',
                         body: formData,
 
@@ -262,11 +260,6 @@
             }, 500);
         });
 
-
-
-
-
     </script>
-
 </body>
 </html>
