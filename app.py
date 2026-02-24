@@ -28,7 +28,7 @@ def translate(text, source, target):
         messages=[
             {
                 "role": "system",
-                "content": f"Translate from {source} to {target}. Return ONLY the translation."
+                "content": f"Translate from {source} to {target}. Return ONLY the translation. Preserve all punctuation marks and line breaks from the original text."
             },
             {"role": "user", "content": text}
         ],

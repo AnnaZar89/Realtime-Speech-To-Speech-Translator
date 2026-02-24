@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="static/css/style.css">
-    <title>🎤 Tłumacz Głosowy</title>
+    <title>Translator App</title>
 </head>
 <body>
     <div id="translatorMainPage">
@@ -89,14 +89,11 @@
                 </select>
             </div>
                 <div class="container">
-
                     <form id="ttsForm">
                         <label>Podaj tekst do zamiany przetłumaczenia:</label><br>
                         <textarea id="textToTranslate" name="text" rows="5" cols="50" required></textarea><br><br>
-
                     </form>
-
-                    <div class="sound-translation"></div>
+                    <div class="sound-translation" id="tts-target-translation"></div>
                 </div>
         </div>
     </div>
@@ -112,6 +109,9 @@
         let translatorMainPage = document.getElementById('translatorMainPage');
         let voiceTranslatorContainer = document.getElementById('voiceTranslatorContainer');
         let textTranslatorContainer = document.getElementById('textTranslatorContainer');
+        let srcLang = document.getElementById('dataSrcLanguage').value;
+        let targetLang = document.getElementById('dataTargetLanguage').value;
+        let textOutput = document.getElementById('tts-target-translation')
 
         function render () {
             hash = window.location.hash
@@ -155,8 +155,8 @@
                     audioChunks = [];
                     let formData = new FormData();
                     let historyValue = document.getElementById('history').value;
-                    let srcLang = document.getElementById('dataSrcLanguage').value;
-                    let targetLang = document.getElementById('dataTargetLanguage').value;
+<!--                    let srcLang = document.getElementById('dataSrcLanguage').value;-->
+<!--                    let targetLang = document.getElementById('dataTargetLanguage').value;-->
                     formData.append('source_lang', srcLang);
                     formData.append('target_lang', targetLang);
                     formData.append('history', historyValue);
@@ -193,7 +193,6 @@
                     } catch (error) {
                         console.error("Błąd wysyłki:", error);
                     }
-
                 };
             })
 
@@ -203,70 +202,66 @@
                 mediaRecorder.stop();
                 recordBtn.textContent = 'Record';
             } else {
-
-
-
-
-
-
                 mediaRecorder.start();
                 recordBtn.textContent = 'Stop';
 
             }
-
-
-
-     });
-
-      clearBtn.addEventListener('click', async () => {
-        leftBox.innerHTML = ""
-        rightBox.innerHTML = ""
-        historyValue = [];
-        document.getElementById('dataSrcLanguage').value = 'pl-PL';
-        document.getElementById('dataTargetLanguage').value = 'en-US';
-
-    });
-
-const textArea = document.getElementById('textToTranslate');
-<!--const textOutput = document.getElementById('textTranslationOutput');-->
-
-// Funkcja wysyłająca tekst do tłumaczenia
-async function autoTranslate() {
-    const text = textArea.value.trim();
-
-    if (text.length === 0) {
-        rightBox.innerHTML = "";
-        return;
-    }
-
-    // Pobieramy aktualnie wybrane języki z selectów wewnątrz kontenera tekstowego
-    const srcLang = textTranslatorContainer.querySelector('select[name="dataSrcLanguage"]').value;
-    const targetLang = textTranslatorContainer.querySelector('select[name="dataTargetLanguage"]').value;
-
-    const formData = new FormData();
-    formData.append('text', text);
-    formData.append('source_lang', srcLang);
-    formData.append('target_lang', targetLang);
-
-    try {
-        const response = await fetch('/translate_tts', { // Upewnij się, że ten endpoint obsługuje te pola
-            method: 'POST',
-            body: formData
         });
-        const data = await response.json();
 
-        if (data.success) {
-            // Używamy = zamiast += aby podmieniać tekst na bieżąco
-            const textOutput = textTranslatorContainer.querySelector('.sound-translation');
-            textOutput.innerHTML = `<div class="msg-block">${data.translation}</div>`;
-}
-    } catch (error) {
-        console.error("Błąd automatycznego tłumaczenia:", error);
-    }
-}
+        clearBtn.addEventListener('click', async () => {
+            leftBox.innerHTML = ""
+            rightBox.innerHTML = ""
+            historyValue = [];
+            document.getElementById('dataSrcLanguage').value = 'pl-PL';
+            document.getElementById('dataTargetLanguage').value = 'en-US';
 
-// Przypisanie zdarzenia 'input' z opóźnieniem 500ms
-textArea.addEventListener('input', debounce(() => autoTranslate(), 500));
+        });
+
+        const textArea = document.getElementById('textToTranslate');
+
+
+        let debounceTimer = null;
+        let abortController = null;
+
+
+        textArea.addEventListener('input', () => {
+
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(async () => {
+
+                const text = textArea.value.trim();
+                if (!text) return void (textOutput.innerHTML = "");
+                abortController?.abort();
+                abortController = new AbortController();
+
+                const formData = new FormData();
+                formData.append('text', text);
+                formData.append('source_lang', srcLang);
+                formData.append('target_lang', targetLang);
+
+
+                try {
+                    const translation = await fetch('/translate_tts', {
+                        method: 'POST',
+                        body: formData,
+
+                    })
+                    const data = await translation.json();
+
+                    if (data.success) {
+                        textOutput.innerHTML = `<div class="msg-block">${data.translation.replace(/\n/g, '<br>')}</div>`;
+
+                        console.log(data.translation)
+                    }
+
+                } catch (e) {
+                    if (e.name !== 'AbortError')
+                        textOutput.innerHTML = 'Błąd połączenia';
+                }
+
+            }, 500);
+        });
+
 
 
 
