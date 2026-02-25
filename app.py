@@ -2,7 +2,7 @@ import io
 import os
 import json
 import azure.cognitiveservices.speech as speechsdk
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, Response
 from openai import OpenAI
 from pydub import AudioSegment
 from dotenv import load_dotenv
@@ -38,11 +38,7 @@ def translate(text, source, target):
 
 
 def speak_translation(text):
-    """Odtwarza audio z pamięci (jak w projekcie Flask)"""
-    print("🔊 Generuję audio...")
-
     try:
-        # Generuj audio z ElevenLabs
         response = elevenlabs_client.text_to_speech.convert(
             voice_id=ELEVENLABS_VOICE_ID,
             output_format="mp3_44100_128",
@@ -56,16 +52,9 @@ def speak_translation(text):
             )
         )
 
-        # Zbierz bajty audio (analogicznie do audio_file.read())
         audio_data = b''.join(chunk for chunk in response if chunk)
+        return audio_data
 
-        # Wczytaj audio z pamięci (jak w projekcie: AudioSegment.from_file(io.BytesIO(audio_data)))
-        audio = AudioSegment.from_file(io.BytesIO(audio_data), format="mp3")
-
-        print("▶️  Odtwarzam...")
-
-        # Odtwórz bezpośrednio (jak pydub.playback.play)
-        play(audio)
 
 
     except Exception as e:
@@ -82,14 +71,14 @@ def index():
 
 def recognize():
 
-    # 1. Pobierz audio i historię
     audio_file = request.files['audio']
     audio_data = audio_file.read()
-    conversation_history = request.form.get('history', '[]')  # Domyślnie pusta lista w stringu; jak są dane to w json
-    source_lang = request.form.get('source_lang')  # np. "pl-PL"
-    target_lang = request.form.get('target_lang')  # np. "en-US"
+    conversation_history = request.form.get('history', '[]')
+    source_lang = request.form.get('source_lang')
+    target_lang = request.form.get('target_lang')
+    if not source_lang or not target_lang:
+        return jsonify({"success": False, "error": "Brak języka źródłowego lub docelowego"}), 400
 
-    # 2. Konwersja webm -> WAV 16kHz mono (Twoje dotychczasowe przetwarzanie pydub)
     audio = AudioSegment.from_file(io.BytesIO(audio_data))
     audio = audio.set_frame_rate(16000).set_channels(1).set_sample_width(2)
 
@@ -99,7 +88,6 @@ def recognize():
     speech_config = speechsdk.SpeechConfig(AZURE_SPEECH_KEY, AZURE_REGION)
     speech_config.speech_recognition_language = source_lang
 
-    # PushStream dla danych binarnych
     stream = speechsdk.audio.PushAudioInputStream()
     audio_config = speechsdk.audio.AudioConfig(stream=stream)
     recognizer = speechsdk.SpeechRecognizer(speech_config, audio_config)
@@ -114,7 +102,7 @@ def recognize():
         translation = translate(original_text, source_lang, target_lang)
 
         try:
-            history_list = json.loads(conversation_history) # zamieniamy z jsona na nie json
+            history_list = json.loads(conversation_history)
 
         except:
             history_list = []
@@ -134,11 +122,14 @@ def recognize():
 
 @app.route('/synthesize', methods=['POST'])
 def synthesize():
-
     text = request.form.get('text')
     if text:
-        speak_translation(text)
-        return jsonify({"success": True, "message": "Audio played locally"}), 200
+        audio_content = speak_translation(text)
+        return Response(
+            audio_content,
+            mimetype="audio/mpeg",
+            headers={"Content-Disposition": "inline"}
+        )
     else:
         return jsonify({"success": False, "error": "No text provided"}), 400
 
@@ -148,20 +139,16 @@ def translate_text():
         text = request.form.get('text')
         src_lang = request.form.get('source_lang')
         target_lang = request.form.get('target_lang')
-
-        # TUTAJ TWOJA LOGIKA TŁUMACZENIA
-        # Przykład: translation = my_translator.translate(text, ...)
-        translation = f"Przetłumaczono: {text}" # To tylko przykład
         translation = translate(text, src_lang, target_lang)
-        # BARDZO WAŻNE: Musisz zwrócić jsonify, a nie zwykły string!
+        if not text or not src_lang or not target_lang:
+            return jsonify({"success": False, "error": "Brak wymaganych danych"}), 400
+
         return jsonify({
             "success": True,
             "translation": translation
         })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
-
-
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

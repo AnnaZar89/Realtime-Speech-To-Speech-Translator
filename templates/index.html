@@ -182,7 +182,9 @@
                             if (audioResponse.ok) {
 
                                 const audioBlob = await audioResponse.blob();
-                                const audioUrl = URL.createObjectURL(audioBlob);
+                                const audio = new Audio(URL.createObjectURL(audioBlob));
+                                audio.play();
+                                audio.onended = () => URL.revokeObjectURL(audioUrl);
                                 document.getElementById('history').value = data.history_json;
                                 const historyArray = JSON.parse(data.history_json);
                                 window.scrollTo(0, document.body.scrollHeight);
