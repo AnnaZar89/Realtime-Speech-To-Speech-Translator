@@ -107,7 +107,6 @@
         let audioChunks = [];
         let audioBlob;
         let recordBtn = document.getElementById('record-btn');
-        let clearBtn = document.querySelector('.clear-btn');
         let translatorMainPage = document.getElementById('translator-main-page');
         let voiceTranslator = document.getElementById('voice-translator');
         let textTranslator = document.getElementById('text-translator');
@@ -208,19 +207,8 @@
             }
         });
 
-        clearBtn.addEventListener('click', () => {
-            document.getElementById('text-to-translate').value = "";
-            document.querySelectorAll('.sound-detection, .target-translation').forEach(div => {
-                div.innerHTML = "";
-            });
-            document.querySelectorAll('.lang-select').forEach(select => {
-                if (select.name === 'source-lang') select.value = 'pl-PL';
-                if (select.name === 'target-lang') select.value = 'en-US';
-            });
-            document.getElementById('history').value = '[]';
-        });
 
-        const textArea = document.getElementById('text-to-translate');
+
         let debounceTimer = null;
         let abortController = null;
         textArea.addEventListener('input', () => {
@@ -250,8 +238,6 @@
 
                     if (data.success) {
                         textOutput.innerHTML = `<div class="msg-block">${data.translation.replace(/\n/g, '<br>')}</div>`;
-
-                        console.log(data.translation)
                     }
 
                 } catch (e) {
@@ -261,6 +247,26 @@
 
             }, 500);
         });
+
+        document.querySelectorAll('.clear-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                textArea.value = "";
+                document.querySelectorAll('.sound-detection, .target-translation').forEach(div => {
+                    div.innerHTML = "";
+                });
+                document.querySelectorAll('.sound-detection, .target-translation').forEach(div => {
+                    div.innerHTML = "";
+                });
+                document.querySelectorAll('.lang-select').forEach(select => {
+                    if (select.name === 'source-lang') select.value = 'pl-PL';
+                    if (select.name === 'target-lang') select.value = 'en-US';
+                });
+                document.getElementById('history').value = '[]';
+            });
+        });
+
+
+
 
     </script>
 </body>
