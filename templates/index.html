@@ -5,20 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="static/css/style.css">
     <title>Translator App</title>
+    <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+    </style>
 </head>
 <body>
     <div id="translator-main-page">
-        <h1>Translator App</h1>
-        <p>Welcome to the app! Please select translator type:</p>
-        <div>
-            <a href="#voice" class="btn-speech">Speech Translator</a>
-            <a href="#text" class="text-translator-button">Text Translator</a>
+        <div class="main-page-content">
+            <p class="animated-text">Welcome to the</p>
+            <h1>Translator App</h1>
+            <p>Please select translator type:</p>
+            <div class="translator-buttons">
+                <a href="#voice" class="btn-translator btn-speech">Speech Translator</a>
+                <a href="#text" class="btn-translator btn-text">Text Translator</a>
+            </div>
         </div>
-    </div>
+</div>
     <div class="translator-container" id="voice-translator" style="display:none">
         <a href="#home">⬅ Back to Menu</a>
         <div class="select-container">
             <h1>🎤 Real-Time Voice Translator</h1>
+            <div id="live-preview">
+                Please select source and target languages, click the Record button and start speaking...
+            </div>
             <div class="field">
                 <label>Source Language:
                     <select id="src-language" class="lang-select" name="source-lang">
@@ -52,16 +62,18 @@
             <button type="button" id="record-btn">Record</button>
             <button type="button" class="clear-btn">Clear</button>
         </div>
-        <input type="hidden" name="history" id="history" value='{{ history_json|safe }}'>
         <div class="container">
-            <div id="voice-output" class="sound-detection"></div>
-            <div id="translation-result" class="target-translation"></div>
+            <div id="voice-output" class="sound-detection">Source text:</div>
+            <div id="translation-result" class="target-translation">Target text:</div>
         </div>
     </div>
     <div class="translator-container" id="text-translator" style="display:none">
         <a href="#home">⬅ Back to Menu</a>
         <div class="select-container">
             <h1>Real-Time Text Translator</h1>
+            <div id="text-placeholder">
+                Please select source and target languages and start typing text to translate...
+            </div>
             <div class="field">
                 <label>Source Language:
                     <select class="lang-select" name="source-lang">
@@ -92,28 +104,56 @@
                 <button type="button" class="clear-btn">Clear</button>
             </div>
                 <div class="container">
-                    <form id="text-to-text-form">
-                        <label>Podaj tekst do zamiany przetłumaczenia:</label><br>
-                        <textarea id="text-to-translate" name="text" rows="5" cols="50" required></textarea><br><br>
-                    </form>
-                    <div class="target-translation" id="text-target-translation"></div>
+                    <div>Source text...
+                        <form id="text-to-text-form">
+                            <textarea id="text-to-translate" name="text" rows="5" cols="50" required></textarea><br><br>
+                        </form>
+                    </div>
+                    <div class="target-translation" id="text-target-translation">
+                        Target text...
+                    </div>
                 </div>
         </div>
     </div>
     <script>
-        let leftBox = document.getElementById('voice-output');
+        const recordBtn = document.getElementById('record-btn');
+        const translatorMainPage = document.getElementById('translator-main-page');
+        const voiceTranslator = document.getElementById('voice-translator');
+        const textTranslator = document.getElementById('text-translator');
+        const livePreview = document.getElementById('live-preview');
+        const textArea = document.getElementById('text-to-translate');
+        const textOutput = document.getElementById('text-target-translation');
+        let voiceOutput = document.getElementById('voice-output');
         let rightBox = document.getElementById('translation-result');
-        let mediaRecorder;
-        let audioChunks = [];
-        let audioBlob;
-        let recordBtn = document.getElementById('record-btn');
-        let translatorMainPage = document.getElementById('translator-main-page');
-        let voiceTranslator = document.getElementById('voice-translator');
-        let textTranslator = document.getElementById('text-translator');
-        let textOutput = document.getElementById('text-target-translation')
+        let abortController = null;
+        let recognizer = null;
+        let debounceTimer = null;
+        let audioQueue = [];
+        let isPlaying = false;
+
+        function playNextAudio() {
+            if (isPlaying || audioQueue.length === 0) return;
+
+            isPlaying = true;
+            const audioUrl = audioQueue.shift(); // bierzemy pierwszy z kolejki
+            const audio = new Audio(audioUrl);
+            audio.volume = 1.0;
+
+            audio.onended = () => {
+                URL.revokeObjectURL(audioUrl);
+                isPlaying = false;
+                playNextAudio(); // odtwarzamy następne z kolejki
+            };
+
+            audio.play().catch(err => {
+                console.error('Play failed:', err);
+                isPlaying = false;
+                playNextAudio();
+            });
+        }
 
         function render () {
-            hash = window.location.hash
+            const hash = window.location.hash
             voiceTranslator.style.display="none";
             textTranslator.style.display="none";
             translatorMainPage.style.display="none";
@@ -122,97 +162,89 @@
             } else if (hash === '#text') {
                 textTranslator.style.display = "block";
             } else {
-
-                translatorMainPage.style.display = "block";
+                translatorMainPage.style.display = "flex";
             }
         }
 
-        function debounce(func, timeout = 500) {
-            let timer;
-            return (...args) => {
-                clearTimeout(timer);
-                timer = setTimeout(() => { func.apply(this, args); }, timeout);
-            };
-        }
 
         window.addEventListener('hashchange', render);
         window.addEventListener('load', render);
 
-        let audioHistory = [];
-        navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(stream => {
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.ondataavailable = (e) => {
-                    audioChunks.push(e.data);
-                };
-
-                mediaRecorder.onstop = async () => {
-                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    audioChunks = [];
-                    let formData = new FormData();
-                    let historyValue = document.getElementById('history').value;
-                    const container = recordBtn.closest('.translator-container');
-                    const src = container.querySelector('[name="source-lang"]').value;
-                    const target = container.querySelector('[name="target-lang"]').value;
-                    formData.append('source_lang', src);
-                    formData.append('target_lang', target);
-                    formData.append('history', historyValue);
-                    formData.append('audio', audioBlob, 'audio.webm');
-
-                    try {
-                        const response = await fetch('/recognize', {
-                            method: 'POST',
-                            body: formData
-                        });
-
-                        const data = await response.json();
-
-
-                        if (data.success) {
-                            leftBox.innerHTML += `<div class="msg-block">${data.original_text}</div>`;
-                            rightBox.innerHTML += `<div class="msg-block">${data.translation}</div>`;
-
-                            const audioFormData = new FormData();
-                            audioFormData.append('text', data.translation);
-                            const audioResponse = await fetch('/synthesize', {
-                                method: 'POST',
-                                body: audioFormData
-                            });
-                            if (audioResponse.ok) {
-
-                                const audioBlob = await audioResponse.blob();
-                                const audio = new Audio(URL.createObjectURL(audioBlob));
-                                audio.play();
-                                audio.onended = () => URL.revokeObjectURL(audioUrl);
-                                document.getElementById('history').value = data.history_json;
-                                const historyArray = JSON.parse(data.history_json);
-                                window.scrollTo(0, document.body.scrollHeight);
-                            }
-                        }
-                    } catch (error) {
-                        console.error("Błąd wysyłki:", error);
-                    }
-                };
-            })
-
-
-        recordBtn.addEventListener('click', async () => {
-            if (mediaRecorder.state === 'recording') {
-                mediaRecorder.stop();
-                recordBtn.textContent = 'Record';
+        recordBtn.addEventListener('click', () => {
+            if (!recognizer) {
+                startRecognition();
+                livePreview.textContent = 'Recording...'
             } else {
-                mediaRecorder.start();
-                recordBtn.textContent = 'Stop';
-
+                stopRecognition();
+                livePreview.textContent = 'Please select source and target languages, click the Record button and start speaking...'
             }
         });
 
+        async function startRecognition() {
+            const srcLang = document.getElementById('src-language').value;
+            const targetLang = document.getElementById('target-language').value;
+            const tokenResponse = await fetch('/api/speech-token');
+            const tokenData = await tokenResponse.json();
+            const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(
+                    tokenData.token,
+                    tokenData.region
+            );
+            speechConfig.speechRecognitionLanguage = srcLang;
+            const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+            recognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
+            recognizer.recognized = async (_, e) => {
+                if (!e.result.text) return;
+                const entry = document.createElement('p');
+                entry.textContent = e.result.text;
+                voiceOutput.appendChild(entry);
+                voiceOutput.scrollTop = voiceOutput.scrollHeight;
+                const formData = new FormData();
+                formData.append('text', e.result.text);
+                formData.append('source_lang', srcLang);
+                formData.append('target_lang', targetLang);
+                try {
+                    const response = await fetch('/translate_voice', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    if (!data.success) return;
+                    const translated_text = document.createElement('p');
+                    translated_text.textContent = data.translation;
+                    rightBox.appendChild(translated_text);
+                    rightBox.scrollTop = rightBox.scrollHeight;
+                    const audioFormData = new FormData();
+                    audioFormData.append('text', data.translation);
 
+                    const audioResponse = await fetch('/synthesize', {
+                        method: 'POST',
+                        body: audioFormData
+                    });
+                    if (audioResponse.ok) {
+                        const audioBlob = await audioResponse.blob();
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        audioQueue.push(audioUrl); // dodajemy do kolejki zamiast od razu grać
+                        playNextAudio();
+                    }
+                } catch (err) {
+                    console.error("Error:", err);
+                }
+            };
+            recognizer.startContinuousRecognitionAsync();
+            recordBtn.textContent = 'Stop';
+        }
 
-        let debounceTimer = null;
-        let abortController = null;
+        function stopRecognition() {
+            if (recognizer) {
+                recognizer.stopContinuousRecognitionAsync(() => {
+                    recognizer.close();
+                    recognizer = null;
+                });
+            }
+            recordBtn.textContent = 'Record';
+        }
+
         textArea.addEventListener('input', () => {
-
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(async () => {
                 const text = textArea.value.trim();
@@ -226,8 +258,6 @@
                 formData.append('text', text);
                 formData.append('source_lang', src);
                 formData.append('target_lang', target);
-
-
                 try {
                     const translation = await fetch('/translate_text', {
                         method: 'POST',
@@ -235,39 +265,28 @@
 
                     })
                     const data = await translation.json();
-
                     if (data.success) {
                         textOutput.innerHTML = `<div class="msg-block">${data.translation.replace(/\n/g, '<br>')}</div>`;
                     }
-
                 } catch (e) {
                     if (e.name !== 'AbortError')
                         textOutput.innerHTML = 'Błąd połączenia';
                 }
-
             }, 500);
         });
 
         document.querySelectorAll('.clear-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 textArea.value = "";
-                document.querySelectorAll('.sound-detection, .target-translation').forEach(div => {
-                    div.innerHTML = "";
-                });
-                document.querySelectorAll('.sound-detection, .target-translation').forEach(div => {
-                    div.innerHTML = "";
-                });
+                voiceOutput.innerHTML = 'Source text:';
+                rightBox.innerHTML = 'Target text:';
                 document.querySelectorAll('.lang-select').forEach(select => {
                     if (select.name === 'source-lang') select.value = 'pl-PL';
                     if (select.name === 'target-lang') select.value = 'en-US';
                 });
-                document.getElementById('history').value = '[]';
             });
         });
-
-
-
-
     </script>
 </body>
 </html>
+
