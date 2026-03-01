@@ -13,7 +13,7 @@
 <body>
     <div id="translator-main-page">
         <div class="main-page-content">
-            <p class="animated-text">Welcome to the</p>
+            <p class="animated-text">Welcome to the....</p>
             <h1>Translator App</h1>
             <p>Please select translator type:</p>
             <div class="translator-buttons">
@@ -29,33 +29,35 @@
             <div id="live-preview">
                 Please select source and target languages, click the Record button and start speaking...
             </div>
-            <div class="field">
-                <label>Source Language:
-                    <select id="src-language" class="lang-select" name="source-lang">
-                        <option value="pl-PL" selected>Polish</option>
-                        <option value="en-US">English</option>
-                        <option value="fr-FR">French</option>
-                        <option value="de-DE">German</option>
-                        <option value="it-IT">Italian</option>
-                        <option value="es-ES">Spanish</option>
-                        <option value="ja-JP">Japanese</option>
-                        <option value="zh-CN">Chinese</option>
-                    </select>
-                </label>
-            </div>
-            <div class="field">
-                <label>Target Language:
-                    <select id="target-language" class="lang-select" name="target-lang">
-                        <option value="pl-PL">Polish</option>
-                        <option value="en-US" selected>English</option>
-                        <option value="fr-FR">French</option>
-                        <option value="de-DE">German</option>
-                        <option value="it-IT">Italian</option>
-                        <option value="es-ES">Spanish</option>
-                        <option value="ja-JP">Japanese</option>
-                        <option value="zh-CN">Chinese</option>
-                    </select>
-                </label>
+            <div class="languages-container">
+                <div class="field">
+                    <label>Source Language:
+                        <select id="src-language" class="lang-select" name="source-lang">
+                            <option value="pl-PL" selected>Polish</option>
+                            <option value="en-US">English</option>
+                            <option value="fr-FR">French</option>
+                            <option value="de-DE">German</option>
+                            <option value="it-IT">Italian</option>
+                            <option value="es-ES">Spanish</option>
+                            <option value="ja-JP">Japanese</option>
+                            <option value="zh-CN">Chinese</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="field">
+                    <label>Target Language:
+                        <select id="target-language" class="lang-select" name="target-lang">
+                            <option value="pl-PL">Polish</option>
+                            <option value="en-US" selected>English</option>
+                            <option value="fr-FR">French</option>
+                            <option value="de-DE">German</option>
+                            <option value="it-IT">Italian</option>
+                            <option value="es-ES">Spanish</option>
+                            <option value="ja-JP">Japanese</option>
+                            <option value="zh-CN">Chinese</option>
+                        </select>
+                    </label>
+                </div>
             </div>
         </div>
         <div class="button-container">
@@ -63,8 +65,12 @@
             <button type="button" class="clear-btn">Clear</button>
         </div>
         <div class="container">
-            <div id="voice-output" class="sound-detection">Source text:</div>
-            <div id="translation-result" class="target-translation">Target text:</div>
+            <div id="voice-output" class="sound-detection">
+                <p class="box-label">SOURCE TEXT:</p>
+            </div>
+            <div id="translation-result" class="target-translation">
+                <p class="box-label">TARGET TEXT:</p>
+            </div>
         </div>
     </div>
     <div class="translator-container" id="text-translator" style="display:none">
@@ -74,43 +80,49 @@
             <div id="text-placeholder">
                 Please select source and target languages and start typing text to translate...
             </div>
-            <div class="field">
-                <label>Source Language:
-                    <select class="lang-select" name="source-lang">
-                        <option value="pl-PL" selected>Polish</option>
-                        <option value="en-US">English</option>
-                        <option value="fr-FR">French</option>
-                        <option value="de-DE">German</option>
-                        <option value="it-IT">Italian</option>
-                        <option value="es-ES">Spanish</option>
-                        <option value="ja-JP">Japanese</option>
-                        <option value="zh-CN">Chinese</option>
-                    </select>
-                </label>
+            <div class="languages-container">
+                <div class="field">
+                    <label>Source Language:
+                        <select class="lang-select" name="source-lang">
+                            <option value="pl-PL" selected>Polish</option>
+                            <option value="en-US">English</option>
+                            <option value="fr-FR">French</option>
+                            <option value="de-DE">German</option>
+                            <option value="it-IT">Italian</option>
+                            <option value="es-ES">Spanish</option>
+                            <option value="ja-JP">Japanese</option>
+                            <option value="zh-CN">Chinese</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="field">
+                    <label>Target Language:
+                        <select class="lang-select" name="target-lang">
+                            <option value="pl-PL">Polish</option>
+                            <option value="en-US" selected>English</option>
+                            <option value="fr-FR">French</option>
+                            <option value="de-DE">German</option>
+                            <option value="it-IT">Italian</option>
+                            <option value="es-ES">Spanish</option>
+                            <option value="ja-JP">Japanese</option>
+                            <option value="zh-CN">Chinese</option>
+                        </select>
+                    </label>
+
+                </div>
+
             </div>
-            <div class="field">
-                <label>Target Language:
-                    <select class="lang-select" name="target-lang">
-                        <option value="pl-PL">Polish</option>
-                        <option value="en-US" selected>English</option>
-                        <option value="fr-FR">French</option>
-                        <option value="de-DE">German</option>
-                        <option value="it-IT">Italian</option>
-                        <option value="es-ES">Spanish</option>
-                        <option value="ja-JP">Japanese</option>
-                        <option value="zh-CN">Chinese</option>
-                    </select>
-                </label>
-                <button type="button" class="clear-btn">Clear</button>
-            </div>
+            <button type="button" class="clear-btn" id="btn-in-text-trans">Clear</button>
                 <div class="container">
-                    <div>Source text...
+                    <div CLASS="sound-detection">
+                        <p class="box-label">SOURCE TEXT...</p>
                         <form id="text-to-text-form">
-                            <textarea id="text-to-translate" name="text" rows="5" cols="50" required></textarea><br><br>
+                            <textarea id="text-to-translate" name="text" placeholder="Type text here..."></textarea><br><br>
                         </form>
                     </div>
                     <div class="target-translation" id="text-target-translation">
-                        Target text...
+
+                        <p class="box-label">TARGET TEXT...</p>
                     </div>
                 </div>
         </div>
@@ -158,9 +170,9 @@
             textTranslator.style.display="none";
             translatorMainPage.style.display="none";
             if (hash === '#voice') {
-                voiceTranslator.style.display = "block";
+                voiceTranslator.style.display = "flex";
             } else if (hash === '#text') {
-                textTranslator.style.display = "block";
+                textTranslator.style.display = "flex";
             } else {
                 translatorMainPage.style.display = "flex";
             }
@@ -266,7 +278,7 @@
                     })
                     const data = await translation.json();
                     if (data.success) {
-                        textOutput.innerHTML = `<div class="msg-block">${data.translation.replace(/\n/g, '<br>')}</div>`;
+                        textOutput.innerHTML = `<p class="box-label">TARGET TEXT...</p><div class="msg-block">${data.translation.replace(/\n/g, '<br>')}</div>`;
                     }
                 } catch (e) {
                     if (e.name !== 'AbortError')
@@ -278,8 +290,8 @@
         document.querySelectorAll('.clear-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 textArea.value = "";
-                voiceOutput.innerHTML = 'Source text:';
-                rightBox.innerHTML = 'Target text:';
+                voiceOutput.innerHTML = '<p class="box-label">SOURCE TEXT:</p>';
+                rightBox.innerHTML = '<p class="box-label">TARGET TEXT:</p>';
                 document.querySelectorAll('.lang-select').forEach(select => {
                     if (select.name === 'source-lang') select.value = 'pl-PL';
                     if (select.name === 'target-lang') select.value = 'en-US';
