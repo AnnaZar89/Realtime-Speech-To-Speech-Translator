@@ -12,13 +12,13 @@
 </head>
 <body>
     <div id="translator-main-page">
-        <div class="main-page-content">
+        <div class="main-page-card">
             <p class="animated-text">Welcome to the....</p>
             <h1>Translator App</h1>
             <p>Please select translator type:</p>
-            <div class="translator-buttons">
-                <a href="#voice" class="btn-translator btn-speech">Speech Translator</a>
-                <a href="#text" class="btn-translator btn-text">Text Translator</a>
+            <div class="main-page-btn-container">
+                <a href="#voice" class="btn-main-page btn-speech">Speech Translator</a>
+                <a href="#text" class="btn-main-page btn-text">Text Translator</a>
             </div>
         </div>
 </div>
@@ -26,13 +26,13 @@
         <a href="#home">⬅ Back to Menu</a>
         <div class="select-container">
             <h1>🎤 Real-Time Voice Translator</h1>
-            <div id="live-preview">
+            <div class="helper-text">
                 Please select source and target languages, click the Record button and start speaking...
             </div>
             <div class="languages-container">
                 <div class="field">
                     <label>Source Language:
-                        <select id="src-language" class="lang-select" name="source-lang">
+                        <select id="source-lang" class="lang-select" name="source-lang">
                             <option value="pl-PL" selected>Polish</option>
                             <option value="en-US">English</option>
                             <option value="fr-FR">French</option>
@@ -64,11 +64,11 @@
             <button type="button" id="record-btn">Record</button>
             <button type="button" class="clear-btn">Clear</button>
         </div>
-        <div class="container">
-            <div id="voice-output" class="sound-detection">
+        <div class="box-container">
+            <div id="voice-recognition-box" class="left-box">
                 <p class="box-label">SOURCE TEXT:</p>
             </div>
-            <div id="translation-result" class="target-translation">
+            <div id="voice-translation-box" class="right-box">
                 <p class="box-label">TARGET TEXT:</p>
             </div>
         </div>
@@ -77,7 +77,7 @@
         <a href="#home">⬅ Back to Menu</a>
         <div class="select-container">
             <h1>Real-Time Text Translator</h1>
-            <div id="text-placeholder">
+            <div class="helper-text">
                 Please select source and target languages and start typing text to translate...
             </div>
             <div class="languages-container">
@@ -108,35 +108,36 @@
                             <option value="zh-CN">Chinese</option>
                         </select>
                     </label>
-
                 </div>
-
             </div>
-            <button type="button" class="clear-btn" id="btn-in-text-trans">Clear</button>
-                <div class="container">
-                    <div CLASS="sound-detection">
+            </div>
+            <div class="button-container">
+                <button type="button" class="clear-btn">Clear</button>
+            </div>
+            <div class="box-container">
+                    <div class="left-box">
                         <p class="box-label">SOURCE TEXT...</p>
-                        <form id="text-to-text-form">
-                            <textarea id="text-to-translate" name="text" placeholder="Type text here..."></textarea><br><br>
-                        </form>
+                        <textarea id="text-to-translate" name="text" placeholder="Type text here..."></textarea>
                     </div>
-                    <div class="target-translation" id="text-target-translation">
-
+                    <div class="right-box">
                         <p class="box-label">TARGET TEXT...</p>
+                        <div id="text-target-translation" class="scroll-content" >
+                        </div>
                     </div>
                 </div>
-        </div>
+
     </div>
     <script>
         const recordBtn = document.getElementById('record-btn');
         const translatorMainPage = document.getElementById('translator-main-page');
         const voiceTranslator = document.getElementById('voice-translator');
         const textTranslator = document.getElementById('text-translator');
-        const livePreview = document.getElementById('live-preview');
         const textArea = document.getElementById('text-to-translate');
         const textOutput = document.getElementById('text-target-translation');
-        let voiceOutput = document.getElementById('voice-output');
-        let rightBox = document.getElementById('translation-result');
+        const leftBox = document.getElementsByClassName('left-box');
+        const rightBox = document.getElementsByClassName('right-box');
+        let voiceRecognitionBox = document.getElementById('voice-recognition-box');
+        let voiceTranslationBox = document.getElementById('voice-translation-box');
         let abortController = null;
         let recognizer = null;
         let debounceTimer = null;
@@ -145,18 +146,15 @@
 
         function playNextAudio() {
             if (isPlaying || audioQueue.length === 0) return;
-
             isPlaying = true;
-            const audioUrl = audioQueue.shift(); // bierzemy pierwszy z kolejki
+            const audioUrl = audioQueue.shift();
             const audio = new Audio(audioUrl);
             audio.volume = 1.0;
-
             audio.onended = () => {
                 URL.revokeObjectURL(audioUrl);
                 isPlaying = false;
-                playNextAudio(); // odtwarzamy następne z kolejki
+                playNextAudio();
             };
-
             audio.play().catch(err => {
                 console.error('Play failed:', err);
                 isPlaying = false;
@@ -178,7 +176,6 @@
             }
         }
 
-
         window.addEventListener('hashchange', render);
         window.addEventListener('load', render);
 
@@ -193,7 +190,7 @@
         });
 
         async function startRecognition() {
-            const srcLang = document.getElementById('src-language').value;
+            const sourceLang = document.getElementById('source-lang').value;
             const targetLang = document.getElementById('target-language').value;
             const tokenResponse = await fetch('/api/speech-token');
             const tokenData = await tokenResponse.json();
@@ -201,18 +198,18 @@
                     tokenData.token,
                     tokenData.region
             );
-            speechConfig.speechRecognitionLanguage = srcLang;
+            speechConfig.speechRecognitionLanguage = sourceLang;
             const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
             recognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
             recognizer.recognized = async (_, e) => {
                 if (!e.result.text) return;
                 const entry = document.createElement('p');
                 entry.textContent = e.result.text;
-                voiceOutput.appendChild(entry);
-                voiceOutput.scrollTop = voiceOutput.scrollHeight;
+                voiceRecognitionBox.appendChild(entry);
+                voiceRecognitionBox.scrollTop = voiceRecognitionBox.scrollHeight;
                 const formData = new FormData();
                 formData.append('text', e.result.text);
-                formData.append('source_lang', srcLang);
+                formData.append('source_lang', sourceLang);
                 formData.append('target_lang', targetLang);
                 try {
                     const response = await fetch('/translate_voice', {
@@ -223,8 +220,8 @@
                     if (!data.success) return;
                     const translated_text = document.createElement('p');
                     translated_text.textContent = data.translation;
-                    rightBox.appendChild(translated_text);
-                    rightBox.scrollTop = rightBox.scrollHeight;
+                    voiceTranslationBox.appendChild(translated_text);
+                    voiceTranslationBox .scrollTop = voiceTranslationBox.scrollHeight;
                     const audioFormData = new FormData();
                     audioFormData.append('text', data.translation);
 
@@ -274,11 +271,13 @@
                     const translation = await fetch('/translate_text', {
                         method: 'POST',
                         body: formData,
+                        signal: abortController.signal
 
                     })
                     const data = await translation.json();
                     if (data.success) {
-                        textOutput.innerHTML = `<p class="box-label">TARGET TEXT...</p><div class="msg-block">${data.translation.replace(/\n/g, '<br>')}</div>`;
+                        textOutput.innerHTML = `<div class="msg-block">${data.translation}</div>`;
+                        textOutput.scrollTop = textOutput.scrollHeight;
                     }
                 } catch (e) {
                     if (e.name !== 'AbortError')
@@ -290,8 +289,9 @@
         document.querySelectorAll('.clear-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 textArea.value = "";
-                voiceOutput.innerHTML = '<p class="box-label">SOURCE TEXT:</p>';
-                rightBox.innerHTML = '<p class="box-label">TARGET TEXT:</p>';
+                voiceRecognitionBox.innerHTML = '<p class="box-label">SOURCE TEXT:</p>';
+                voiceTranslationBox.innerHTML = '<p class="box-label">TARGET TEXT:</p>';
+                textOutput.innerHTML = '';
                 document.querySelectorAll('.lang-select').forEach(select => {
                     if (select.name === 'source-lang') select.value = 'pl-PL';
                     if (select.name === 'target-lang') select.value = 'en-US';
